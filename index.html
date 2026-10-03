@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>溫腥風健康 BMI 計算器 🩸💖</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Noto+Sans+TC:wght@400;500;700;900&family=Quicksand:wght@600;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti JS -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bloody: {
+                            bg: '#1C1619',          /* Midnight Dark Flesh */
+                            card: '#292025',        /* Deep Spooky Velvet */
+                            border: '#5C3443',      /* Dried Blood Stitching */
+                            pink: '#FF85A2',        /* Cute Pastel Blood Pink */
+                            lightPink: '#FFD6E0',   /* Cute Bone Flesh Tint */
+                            red: '#E63946',         /* Fresh Crimson */
+                            bone: '#F7EBE8',        /* Cream Bone White */
+                            purple: '#9D4EDD',      /* Ghostly Purple */
+                            ghost: '#C77DFF',       /* Pastel Purple Sparkle */
+                            green: '#70E000'        /* Zombie Acid Green */
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['"Noto Sans TC"', 'Quicksand', 'sans-serif'],
+                        spooky: ['Creepster', 'cursive']
+                    },
+                    boxShadow: {
+                        'spooky': '0 10px 30px -5px rgba(230, 57, 70, 0.25), 0 4px 12px -2px rgba(157, 78, 221, 0.2)',
+                        'glow-pink': '0 0 20px rgba(255, 133, 162, 0.4)',
+                        'glow-red': '0 0 25px rgba(230, 57, 70, 0.5)'
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background-color: #1C1619;
+            color: #F7EBE8;
+            background-image: 
+                radial-gradient(#3A2530 1.5px, transparent 1.5px),
+                radial-gradient(#5C3443 1px, #1C1619 100%);
+            background-size: 28px 28px, 100% 100%;
+            background-attachment: fixed;
+        }
+
+        /* Stitching effect border */
+        .stitched-border {
+            border: 2px dashed #FF85A2;
+            position: relative;
+        }
+
+        /* Heartbeat Animation */
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            14% { transform: scale(1.15); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.12); }
+            70% { transform: scale(1); }
+        }
+        .animate-heartbeat {
+            animation: heartbeat 1.8s infinite ease-in-out;
+        }
+
+        /* Ghost Floating Animation */
+        @keyframes floatGhost {
+            0%, 100% { transform: translateY(0px) rotate(-3deg); }
+            50% { transform: translateY(-10px) rotate(3deg); }
+        }
+        .animate-ghost {
+            animation: floatGhost 3.5s ease-in-out infinite;
+        }
+
+        /* Drip Effect */
+        .drip-effect {
+            position: relative;
+        }
+        .drip-effect::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 20%;
+            width: 8px;
+            height: 12px;
+            background: #FF85A2;
+            border-radius: 0 0 10px 10px;
+            animation: drip 2.5s infinite ease-in;
+        }
+        @keyframes drip {
+            0% { height: 0; opacity: 1; }
+            70% { height: 14px; opacity: 1; }
+            100% { height: 18px; opacity: 0; transform: translateY(5px); }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #292025;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #FF85A2;
+            border-radius: 8px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #E63946;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between items-center p-3 sm:p-6 font-sans antialiased selection:bg-bloody-pink selection:text-bloody-bg">
+
+    <div class="w-full max-w-4xl mx-auto">
+        
+        <!-- Header Section -->
+        <header class="text-center mb-6 mt-2 relative">
+            
+            <!-- Floating Little Spooky Decor -->
+            <div class="absolute top-0 left-4 text-bloody-ghost text-2xl animate-ghost hidden sm:block">
+                <i class="fa-solid fa-ghost"></i>
+            </div>
+            <div class="absolute top-2 right-6 text-bloody-pink text-xl animate-heartbeat hidden sm:block">
+                <i class="fa-solid fa-vampire-bats"></i>
+            </div>
+
+            <!-- Heart icon header -->
+            <div class="inline-flex items-center justify-center p-3.5 bg-bloody-card border-2 border-bloody-pink/40 rounded-full text-bloody-pink mb-3 shadow-spooky animate-heartbeat cursor-pointer">
+                <i class="fa-solid fa-heart-pulse text-3xl text-bloody-red"></i>
+            </div>
+            
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-bloody-bone tracking-wider mb-2 flex items-center justify-center gap-2">
+                <span class="font-spooky text-bloody-pink text-4xl sm:text-5xl tracking-normal">Spooky</span>
+                <span>溫腥健康 BMI 計算器</span>
+                <span class="text-xs bg-bloody-pink/20 text-bloody-pink border border-bloody-pink/40 px-2 py-0.5 rounded-full font-normal">v1.3</span>
+            </h1>
+            <p class="text-xs sm:text-sm text-bloody-lightPink/80 flex items-center justify-center gap-1.5 font-medium">
+                <span>量一量肉肉重，關懷心臟小寶貝～</span>
+                <i class="fa-solid fa-skull text-bloody-ghost text-xs animate-pulse"></i>
+            </p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- LEFT COLUMN: Form Inputs Card (5 cols) -->
+            <div class="lg:col-span-5 bg-bloody-card rounded-3xl p-5 sm:p-7 shadow-spooky border-2 border-bloody-border relative overflow-hidden">
+                
+                <!-- Stitching Line Accent -->
+                <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-bloody-pink via-bloody-purple to-bloody-red"></div>
+
+                <!-- Unit Switcher & Monster Header -->
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-base sm:text-lg font-bold text-bloody-bone flex items-center gap-2">
+                        <i class="fa-solid fa-spaghetti-monster-flying text-bloody-pink"></i>
+                        輸入肉肉數據
+                    </h2>
+                    
+                    <!-- Metric / Imperial Toggle -->
+                    <div class="bg-bloody-bg p-1 rounded-2xl flex text-xs font-medium border border-bloody-border">
+                        <button id="unitMetricBtn" onclick="setUnitSystem('metric')" class="px-2.5 py-1.5 rounded-xl transition-all duration-200 bg-bloody-pink text-bloody-bg font-bold shadow-sm">
+                            公制(cm/kg)
+                        </button>
+                        <button id="unitImperialBtn" onclick="setUnitSystem('imperial')" class="px-2.5 py-1.5 rounded-xl transition-all duration-200 text-bloody-bone/70 hover:text-bloody-bone">
+                            英制(ft/lbs)
+                        </button>
+                    </div>
+                </div>
+
+                <form id="bmiForm" onsubmit="calculateBMI(event)" class="space-y-4">
+                    
+                    <!-- Gender & Blood Type Selection -->
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-xs font-bold text-bloody-pink uppercase tracking-wider mb-1.5">身體屬性</label>
+                            <select id="genderSelect" class="w-full px-3 py-2.5 rounded-2xl border-2 border-bloody-border bg-bloody-bg text-bloody-bone focus:outline-none focus:border-bloody-pink text-xs font-bold cursor-pointer">
+                                <option value="female">♀ 小魔女 / 女性</option>
+                                <option value="male">♂ 小狼人 / 男性</option>
+                                <option value="other">👻 幽靈等級 / 通用</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold text-bloody-pink uppercase tracking-wider mb-1.5">美味血型 🩸</label>
+                            <select id="bloodSelect" class="w-full px-3 py-2.5 rounded-2xl border-2 border-bloody-border bg-bloody-bg text-bloody-bone focus:outline-none focus:border-bloody-pink text-xs font-bold cursor-pointer">
+                                <option value="A">A 型 (香甜可口)</option>
+                                <option value="B">B 型 (熱帶果香)</option>
+                                <option value="O">O 型 (經典濃郁)</option>
+                                <option value="AB">AB 型 (稀有特調)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Age Input -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label for="age" class="text-xs font-bold text-bloody-pink uppercase tracking-wider">年齡 (歲)</label>
+                            <span class="text-xs text-bloody-ghost font-mono"><span id="ageVal">25</span> 歲</span>
+                        </div>
+                        <div class="relative flex items-center">
+                            <input type="number" id="age" value="25" min="1" max="150" required oninput="document.getElementById('ageVal').innerText = this.value"
+                                class="w-full px-4 py-2.5 pl-10 rounded-2xl border-2 border-bloody-border bg-bloody-bg text-bloody-bone focus:outline-none focus:border-bloody-pink transition-all text-sm font-bold">
+                            <i class="fa-solid fa-cake-candles absolute left-3.5 text-bloody-pink/60 text-xs"></i>
+                        </div>
+                    </div>
+
+                    <!-- Metric Inputs (Height & Weight) -->
+                    <div id="metricFields" class="space-y-4">
+                        <!-- Height cm -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label for="heightCm" class="text-xs font-bold text-bloody-pink uppercase tracking-wider">身高 (cm)</label>
+                                <span class="text-xs text-bloody-ghost font-mono"><span id="heightCmVal">168</span> cm</span>
+                            </div>
+                            <div class="relative flex items-center">
+                                <input type="number" id="heightCm" value="168" min="50" max="250" step="0.5" required oninput="document.getElementById('heightCmVal').innerText = this.value"
+                                    class="w-full px-4 py-2.5 pl-10 rounded-2xl border-2 border-bloody-border bg-bloody-bg text-bloody-bone focus:outline-none focus:border-bloody-pink transition-all text-sm font-bold">
+                                <i class="fa-solid fa-ruler-vertical absolute left-3.5 text-bloody-pink/60 text-xs"></i>
+                            </div>
+                        </div>
+
+                        <!-- Weight kg -->
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <label for="weightKg" class="text-xs font-bold text-bloody-pink uppercase tracking-wider">體重 (kg)</label>
+                                <span class="text-xs text-bloody-ghost font-mono"><span id="weightKgVal">60</span> kg</span>
+                            </div>
+                            <div class="relative flex items-center">
+                                <input type="number" id="weightKg" value="60" min="10" max="350" step="0.1" required oninput="document.getElementById('weightKgVal').innerText = this.value"
+                                    class="w-full px-4 py-2.5 pl-10 rounded-2xl border-2 border-bloody-border bg-bloody-bg text-bloody-bone focus:outline-none focus:border-bloody-pink transition-all text-sm font-bold">
+                                <i class="fa-solid fa-weight-scale absolute left-3.5 text-bloody-pink/60 text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Imperial Inputs (Hidden by Default) -->
+                    <div id="imperialFields" class="space-y-4 hidden">
+                        <div>
+                            <label class="text-xs font-bold text-bloody-pink uppercase tracking-wider block mb-1">身高 (英尺 / 英吋)</label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="relative flex items-center">
+                                    <input type="number" id="heightFt" value="5" min="1" max="8" placeholder="Ft"
+                                        class="w-full px-3 py-2.5 pl-8 rounded-2xl border-2 border-bloody-border bg-bloody-bg text-bloody-bone focus:outline-none focus:border-bloody-pink text-sm font-bold">
+                                    <span class="absolute left-3 text-xs text-bloody-pink font-bold">ft</span>
+                                </div>
+                                <div class="relative flex items-center">
+                                    <input type="number" id="heightIn" value="6" min="0" max="11" placeholder="In"
+                                        class="w-full px-3 py-2.5 pl-8 rounded-2xl border-2 border-bloody-border bg-bloody-bg text-bloody-bone focus:outline-none focus:border-bloody-pink text-sm font-bold">
+                                    <span class="absolute left-3 text-xs text-bloody-pink font-bold">in</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="weightLbs" class="text-xs font-bold text-bloody-pink uppercase tracking-wider block mb-1">體重 (磅 lbs)</label>
+                            <div class="relative flex items-center">
+                                <input type="number" id="weightLbs" value="132" min="20" max="700" step="0.5"
+                                    class="w-full px-4 py-2.5 pl-10 rounded-2xl border-2 border-bloody-border bg-bloody-bg text-bloody-bone focus:outline-none focus:border-bloody-pink text-sm font-bold">
+                                <i class="fa-solid fa-weight-scale absolute left-3.5 text-bloody-pink/60 text-xs"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Calculate Submit Button -->
+                    <button type="submit" class="w-full mt-3 py-3.5 px-6 bg-gradient-to-r from-bloody-pink to-bloody-red hover:from-bloody-red hover:to-bloody-pink text-bloody-bg font-extrabold rounded-2xl shadow-glow-pink hover:shadow-glow-red transition-all duration-300 flex items-center justify-center gap-2 group active:scale-[0.98]">
+                        <i class="fa-solid fa-wand-magic-sparkles group-hover:rotate-45 transition-transform text-lg"></i>
+                        <span class="text-base tracking-wider">召喚 BMI 溫腥評估！</span>
+                    </button>
+                </form>
+
+                <!-- Spooky Tip Card -->
+                <div class="mt-4 p-3 rounded-2xl bg-bloody-bg/80 border border-bloody-border flex items-center gap-3">
+                    <div class="p-2 bg-bloody-pink/20 text-bloody-pink rounded-xl text-base">
+                        <i class="fa-solid fa-skull-crossbones"></i>
+                    </div>
+                    <p class="text-[11px] text-bloody-lightPink/70 leading-snug">
+                        小怪秤提示：不論肉肉多少，健康跳動的心臟才是最迷人的小寶貝喔～
+                    </p>
+                </div>
+            </div>
+
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- Main Result Card -->
+                <div class="bg-bloody-card rounded-3xl p-6 sm:p-7 shadow-spooky border-2 border-bloody-border relative overflow-hidden">
+                    
+                    <!-- Ambient Glow Effects -->
+                    <div class="absolute -top-12 -right-12 w-36 h-36 bg-bloody-pink/10 rounded-full blur-2xl pointer-events-none"></div>
+                    <div class="absolute -bottom-12 -left-12 w-36 h-36 bg-bloody-purple/15 rounded-full blur-2xl pointer-events-none"></div>
+
+                    <div class="flex items-center justify-between border-b border-bloody-border/80 pb-4 mb-5">
+                        <h3 class="text-base sm:text-lg font-bold text-bloody-bone flex items-center gap-2">
+                            <i class="fa-solid fa-heart-pulse text-bloody-red animate-pulse"></i>
+                            溫腥健康指數診斷
+                        </h3>
+                        <span id="calcDate" class="text-xs text-bloody-pink/70 font-mono">2026/10/03</span>
+                    </div>
+
+                    <!-- Result Value & Monster Display Grid -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center mb-6">
+                        
+                        <!-- Big BMI Value Card -->
+                        <div class="flex flex-col items-center justify-center p-5 rounded-2xl bg-bloody-bg/70 border-2 border-bloody-border text-center relative group">
+                            <!-- Monster eyes decorative icon -->
+                            <div class="absolute top-2 right-3 text-xs text-bloody-pink/40 group-hover:text-bloody-pink transition-colors">
+                                <i class="fa-solid fa-eyes"></i>
+                            </div>
+
+                            <span class="text-xs font-bold text-bloody-pink/80 uppercase mb-1">您的 BMI 指數</span>
+                            <div id="bmiValueDisplay" class="text-5xl font-black text-bloody-pink font-mono tracking-tight my-1 drop-shadow-md">
+                                21.3
+                            </div>
+
+                            <!-- Status Badge -->
+                            <div id="bmiBadge" class="mt-2 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold bg-bloody-pink/20 text-bloody-pink border border-bloody-pink/40 shadow-sm">
+                                <i class="fa-solid fa-ghost text-[10px]"></i>
+                                <span id="bmiStatusText">完美身材的小魔怪</span>
+                            </div>
+                        </div>
+
+                        <!-- Ideal Weight Range Box -->
+                        <div class="space-y-3">
+                            <div class="p-3.5 rounded-2xl bg-bloody-bg/50 border border-bloody-border">
+                                <div class="text-xs text-bloody-pink/80 mb-1 flex items-center gap-1.5 font-bold">
+                                    <i class="fa-solid fa-bone text-bloody-bone text-xs"></i>
+                                    <span>骨架理想美味體重區間</span>
+                                </div>
+                                <div id="idealWeightDisplay" class="text-sm font-extrabold text-bloody-bone">
+                                    52.2 kg ～ 67.4 kg
+                                </div>
+                            </div>
+
+                            <div class="p-3.5 rounded-2xl bg-bloody-bg/50 border border-bloody-border">
+                                <div class="text-xs text-bloody-ghost mb-1 flex items-center gap-1.5 font-bold">
+                                    <i class="fa-solid fa-vampire-bats text-xs"></i>
+                                    <span>肉肉目標微調建議</span>
+                                </div>
+                                <div id="weightDiffDisplay" class="text-xs font-semibold text-bloody-bone/90 leading-relaxed">
+                                    目前身材完美，連小吸血鬼都讚賞不已！
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Spooky Spectrum Bar -->
+                    <div class="mt-2">
+                        <div class="flex justify-between items-center text-xs font-bold text-bloody-bone mb-2">
+                            <span class="flex items-center gap-1">
+                                <i class="fa-solid fa-vial text-bloody-pink"></i> 體重試管光譜
+                            </span>
+                            <span id="spectrumLabel" class="text-bloody-pink">飄飄骨感 ➔ 完美狀態 ➔ 豐滿多汁</span>
+                        </div>
+
+                        <!-- Custom Gradient Spectrum Bar -->
+                        <div class="relative w-full h-4 rounded-full bg-gradient-to-r from-blue-400 via-emerald-400 via-amber-400 to-rose-500 p-0.5 border border-bloody-border shadow-inner">
+                            <!-- Pointer Indicator -->
+                            <div id="gaugePointer" class="absolute top-1/2 -translate-y-1/2 -ml-3 transition-all duration-700 ease-out" style="left: 42%;">
+                                <div class="w-6 h-6 bg-bloody-card rounded-full border-2 border-bloody-pink shadow-glow-pink flex items-center justify-center">
+                                    <i class="fa-solid fa-heart text-[10px] text-bloody-red animate-heartbeat"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Spectrum Scale Legend -->
+                        <div class="grid grid-cols-4 gap-1 text-[10px] sm:text-xs text-center text-bloody-lightPink/70 mt-2.5 font-semibold">
+                            <div>
+                                <span class="text-blue-400 block font-bold">&lt; 18.5</span>
+                                <span>輕盈飄飄骨</span>
+                            </div>
+                            <div>
+                                <span class="text-emerald-400 block font-bold">18.5 - 23.9</span>
+                                <span>完美健康肉肉</span>
+                            </div>
+                            <div>
+                                <span class="text-amber-400 block font-bold">24.0 - 26.9</span>
+                                <span>微豐滿幸福感</span>
+                            </div>
+                            <div>
+                                <span class="text-rose-400 block font-bold">&ge; 27.0</span>
+                                <span>心臟小寶貝會喘</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <div class="bg-bloody-card rounded-3xl p-6 sm:p-7 shadow-spooky border-2 border-bloody-border">
+                    <div class="flex items-center gap-2 mb-3">
+                        <div class="p-2 rounded-xl bg-bloody-pink/20 text-bloody-pink text-base">
+                            <i class="fa-solid fa-hand-holding-medical"></i>
+                        </div>
+                        <h3 class="text-base sm:text-lg font-bold text-bloody-bone">小惡魔健康顧問溫腥處方</h3>
+                    </div>
+
+                    <!-- Dynamic Advice Text Box -->
+                    <div id="adviceBox" class="p-4 rounded-2xl bg-bloody-bg/90 border-2 border-bloody-pink/40 text-bloody-bone text-xs sm:text-sm leading-relaxed mb-4 shadow-inner">
+                        <!-- Dynamic Text Inserted by JS -->
+                    </div>
+
+                    <!-- Cute Horror Healthy Habits Cards -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+                        <div class="p-3 rounded-2xl bg-bloody-bg/50 border border-bloody-border flex items-center gap-2.5">
+                            <i class="fa-solid fa-droplet text-bloody-pink text-base"></i>
+                            <div>
+                                <span class="font-bold block text-bloody-bone">血液循環水分</span>
+                                <span class="text-bloody-lightPink/60 text-[10px]">每天補充 2000cc 清水</span>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-2xl bg-bloody-bg/50 border border-bloody-border flex items-center gap-2.5">
+                            <i class="fa-solid fa-person-walking text-bloody-ghost text-base"></i>
+                            <div>
+                                <span class="font-bold block text-bloody-bone">夜間夜遊散步</span>
+                                <span class="text-bloody-lightPink/60 text-[10px]">飯後輕鬆走動 20 分鐘</span>
+                            </div>
+                        </div>
+                        <div class="p-3 rounded-2xl bg-bloody-bg/50 border border-bloody-border flex items-center gap-2.5">
+                            <i class="fa-solid fa-moon text-bloody-green text-base"></i>
+                            <div>
+                                <span class="font-bold block text-bloody-bone">棺材沉睡美容覺</span>
+                                <span class="text-bloody-lightPink/60 text-[10px]">維持 8 小時優質睡眠</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="mt-6 grid grid-cols-1 md:grid-cols-12 gap-6">
+            
+            <!-- History Card (7 cols) -->
+            <div class="md:col-span-7 bg-bloody-card rounded-3xl p-6 shadow-spooky border-2 border-bloody-border">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-base font-bold text-bloody-bone flex items-center gap-2">
+                        <i class="fa-solid fa-book-skull text-bloody-pink"></i>
+                        詛咒與健康小筆記 (歷史紀錄)
+                    </h3>
+                    <button onclick="clearHistory()" class="text-xs text-bloody-lightPink/60 hover:text-bloody-red transition-colors flex items-center gap-1 font-bold">
+                        <i class="fa-regular fa-trash-can"></i>
+                        淨化筆記
+                    </button>
+                </div>
+
+                <!-- History Items Scrollable Container -->
+                <div id="historyList" class="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                    <!-- Dynamic Records inserted here -->
+                </div>
+            </div>
+
+            <!-- Dark Lore / Knowledge Box (5 cols) -->
+            <div class="md:col-span-5 bg-bloody-card rounded-3xl p-6 shadow-spooky border-2 border-bloody-border">
+                <h3 class="text-base font-bold text-bloody-bone mb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-question text-bloody-ghost"></i>
+                    溫腥小辭典：BMI 是什麼？
+                </h3>
+                
+                <p class="text-xs text-bloody-lightPink/80 leading-relaxed mb-3">
+                    BMI 是國際計算「人類體重肉肉密度的儀器公式」。計算方式為：
+                </p>
+                
+                <div class="bg-bloody-bg p-3 rounded-2xl text-center text-xs font-mono font-bold text-bloody-pink mb-3 border border-bloody-border">
+                    BMI = 體重(kg) ÷ 身高(m)²
+                </div>
+
+                <div class="space-y-2 text-xs text-bloody-lightPink/80">
+                    <details class="group rounded-xl bg-bloody-bg/60 p-2.5 [&_summary::-webkit-details-marker]:hidden border border-bloody-border cursor-pointer">
+                        <summary class="flex items-center justify-between font-bold text-bloody-bone">
+                            <span>為什麼心臟小寶貝最重要？</span>
+                            <span class="transition group-open:-rotate-180 text-bloody-pink">
+                                <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                            </span>
+                        </summary>
+                        <p class="mt-2 text-[11px] leading-relaxed text-bloody-lightPink/70">
+                            適中的體重能讓心臟每秒蹦蹦跳得更輕鬆～不用背負太多重量負擔，讓你活力滿滿跳蹦一整天！
+                        </p>
+                    </details>
+
+                    <details class="group rounded-xl bg-bloody-bg/60 p-2.5 [&_summary::-webkit-details-marker]:hidden border border-bloody-border cursor-pointer">
+                        <summary class="flex items-center justify-between font-bold text-bloody-bone">
+                            <span>量肉肉的最佳時機？</span>
+                            <span class="transition group-open:-rotate-180 text-bloody-pink">
+                                <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                            </span>
+                        </summary>
+                        <p class="mt-2 text-[11px] leading-relaxed text-bloody-lightPink/70">
+                            早晨剛從棺材/床上爬起來排空後，尚未享用美味早餐時量測最精準喔！
+                        </p>
+                    </details>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-8 text-center text-xs text-bloody-lightPink/60 pb-6">
+            <p class="flex items-center justify-center gap-1.5 font-medium">
+                <span>溫馨愛護體重，可愛微驚悚健康陪伴您每一天</span>
+                <i class="fa-solid fa-ghost text-bloody-pink text-[11px]"></i>
+            </p>
+        </footer>
+
+    </div>
+
+    <script>
+        // State Variables
+        let currentUnit = 'metric';
+        let historyRecords = [];
+
+        // App Initialization
+        window.onload = function() {
+            // Set current date
+            const today = new Date();
+            document.getElementById('calcDate').innerText = `${today.getFullYear()}/${String(today.getMonth() + 1).padStart(2, '0')}/${String(today.getDate()).padStart(2, '0')}`;
+
+            // Load saved history
+            loadHistory();
+
+            // Initial auto-calculate default inputs
+            calculateBMI();
+        };
+
+        // Switch Unit System (Metric vs Imperial)
+        function setUnitSystem(unit) {
+            currentUnit = unit;
+            const metricBtn = document.getElementById('unitMetricBtn');
+            const imperialBtn = document.getElementById('unitImperialBtn');
+            const metricFields = document.getElementById('metricFields');
+            const imperialFields = document.getElementById('imperialFields');
+
+            if (unit === 'metric') {
+                metricBtn.className = 'px-2.5 py-1.5 rounded-xl transition-all duration-200 bg-bloody-pink text-bloody-bg font-bold shadow-sm';
+                imperialBtn.className = 'px-2.5 py-1.5 rounded-xl transition-all duration-200 text-bloody-bone/70 hover:text-bloody-bone';
+                metricFields.classList.remove('hidden');
+                imperialFields.classList.add('hidden');
+            } else {
+                imperialBtn.className = 'px-2.5 py-1.5 rounded-xl transition-all duration-200 bg-bloody-pink text-bloody-bg font-bold shadow-sm';
+                metricBtn.className = 'px-2.5 py-1.5 rounded-xl transition-all duration-200 text-bloody-bone/70 hover:text-bloody-bone';
+                imperialFields.classList.remove('hidden');
+                metricFields.classList.add('hidden');
+            }
+            calculateBMI();
+        }
+
+        // Main Calculation Function
+        function calculateBMI(e) {
+            if (e) e.preventDefault();
+
+            let heightInMeters = 0;
+            let weightInKg = 0;
+
+            if (currentUnit === 'metric') {
+                const heightCm = parseFloat(document.getElementById('heightCm').value) || 168;
+                weightInKg = parseFloat(document.getElementById('weightKg').value) || 60;
+                heightInMeters = heightCm / 100;
+            } else {
+                const ft = parseFloat(document.getElementById('heightFt').value) || 0;
+                const inches = parseFloat(document.getElementById('heightIn').value) || 0;
+                const totalInches = (ft * 12) + inches;
+                heightInMeters = totalInches * 0.0254;
+
+                const lbs = parseFloat(document.getElementById('weightLbs').value) || 0;
+                weightInKg = lbs * 0.453592;
+            }
+
+            if (!heightInMeters || heightInMeters <= 0 || !weightInKg || weightInKg <= 0) return;
+
+            // Calculate BMI
+            const bmi = weightInKg / (heightInMeters * heightInMeters);
+            const bmiFixed = bmi.toFixed(1);
+
+            // Update BMI Display
+            document.getElementById('bmiValueDisplay').innerText = bmiFixed;
+
+            // Calculate Ideal Weight Range (18.5 - 23.9)
+            const minIdealKg = (18.5 * heightInMeters * heightInMeters).toFixed(1);
+            const maxIdealKg = (23.9 * heightInMeters * heightInMeters).toFixed(1);
+
+            if (currentUnit === 'metric') {
+                document.getElementById('idealWeightDisplay').innerText = `${minIdealKg} kg ～ ${maxIdealKg} kg`;
+            } else {
+                const minLbs = (minIdealKg * 2.20462).toFixed(1);
+                const maxLbs = (maxIdealKg * 2.20462).toFixed(1);
+                document.getElementById('idealWeightDisplay').innerText = `${minLbs} lbs ～ ${maxLbs} lbs`;
+            }
+
+            // Target Diff Message
+            let diffMsg = "";
+            if (weightInKg < minIdealKg) {
+                const needed = (minIdealKg - weightInKg).toFixed(1);
+                diffMsg = `小骷髏離完美骨架還差 <span class="text-bloody-pink font-bold">${needed} kg</span> 肉肉，快補充營養！`;
+            } else if (weightInKg > maxIdealKg) {
+                const over = (weightInKg - maxIdealKg).toFixed(1);
+                diffMsg = `肉肉比標準上限多約 <span class="text-bloody-red font-bold">${over} kg</span>，心臟小寶貝正在小聲喘氣呢。`;
+            } else {
+                diffMsg = `完美的身材！連怪獸與吸血鬼都忍不住想讚美（或偷咬一口）呢～✨`;
+            }
+            document.getElementById('weightDiffDisplay').innerHTML = diffMsg;
+
+            // Get Category & Spooky Humor Advice
+            const category = getSpookyCategoryInfo(bmi);
+
+            // Update Badge & Status
+            const badge = document.getElementById('bmiBadge');
+            badge.className = `mt-2 inline-flex items-center gap-1.5 px-3.5 py-1 rounded-full text-xs font-bold ${category.badgeStyle}`;
+            document.getElementById('bmiStatusText').innerText = category.title;
+
+            // Update Spectrum Pointer Position
+            updateSpectrumPointer(bmi);
+
+            // Update Spooky Caring Advice Box
+            document.getElementById('adviceBox').innerHTML = category.advice;
+
+            // Trigger Celebration Animation if user submitted & healthy/cool
+            if (e) {
+                triggerSpookyCelebration();
+                const bloodType = document.getElementById('bloodSelect').value;
+                saveToHistory(bmiFixed, category.title, weightInKg.toFixed(1), bloodType);
+            }
+        }
+
+        // Darkly Cute / Spooky Cozy Advice Engine
+        function getSpookyCategoryInfo(bmi) {
+            if (bmi < 18.5) {
+                return {
+                    title: "飄飄小骨頭 (過輕)",
+                    badgeStyle: "bg-blue-900/60 text-blue-300 border border-blue-400/40",
+                    advice: "👻 <b>小骷髏輕到快被一陣微風吹走啦～</b><br>您身上的肉肉有點太單薄囉！快多吃一點肥美蛋糕與優質蛋白質（如濃郁牛奶、起司、肉肉），為骨架增添溫暖層，別讓心臟寶貝凍著了。"
+                };
+            } else if (bmi >= 18.5 && bmi <= 23.9) {
+                return {
+                    title: "完美讚賞肉肉 (健康)",
+                    badgeStyle: "bg-emerald-900/60 text-emerald-300 border border-emerald-400/40",
+                    advice: "💖 <b>完美的身材！連小怪獸都忍不住想讚美（或咬一口）呢！</b><br>您的肉肉比例剛剛好，心臟小寶貝正開心地跳著浪漫圓舞曲～請繼續保持規律補水與愉快心情喔！"
+                };
+            } else if (bmi >= 24.0 && bmi <= 26.9) {
+                return {
+                    title: "豐滿幸福感 (過重)",
+                    badgeStyle: "bg-amber-900/60 text-amber-300 border border-amber-400/40",
+                    advice: "🍊 <b>這份豐滿的肉肉充滿了滿滿的幸福感呢～</b><br>不過心臟小寶貝偶爾會氣喘吁吁喔！建議飯後和可愛小鬼魂一起去夜走散步 20 分鐘，少喝點含糖巫婆湯，心臟會更感謝你～"
+                };
+            } else {
+                return {
+                    title: "超級沉甸甸肉包 (肥胖)",
+                    badgeStyle: "bg-rose-900/60 text-rose-300 border border-rose-400/40",
+                    advice: "🩸 <b>注意！心臟小寶貝正在大聲呼救：『好重呀～』</b><br>親愛的，這份肉肉負擔讓關節與心臟有點吃不消囉！讓我們從今天開始，少吃高油炸肉，多喝純水，一步步輕盈起來吧！"
+                };
+            }
+        }
+
+        // Spectrum Pointer Animation Helper
+        function updateSpectrumPointer(bmi) {
+            let percentage = 0;
+            if (bmi < 15) {
+                percentage = 5;
+            } else if (bmi < 18.5) {
+                percentage = 5 + ((bmi - 15) / 3.5) * 20;
+            } else if (bmi <= 23.9) {
+                percentage = 25 + ((bmi - 18.5) / 5.4) * 25;
+            } else if (bmi <= 26.9) {
+                percentage = 50 + ((bmi - 24) / 2.9) * 25;
+            } else if (bmi <= 35) {
+                percentage = 75 + ((bmi - 27) / 8) * 20;
+            } else {
+                percentage = 95;
+            }
+
+            const pointer = document.getElementById('gaugePointer');
+            pointer.style.left = `${Math.min(Math.max(percentage, 2), 96)}%`;
+        }
+
+        // LocalStorage History Operations
+        function saveToHistory(bmi, status, weight, bloodType) {
+            const timeStr = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+            const record = {
+                id: Date.now(),
+                date: new Date().toLocaleDateString([], { month: '2-digit', day: '2-digit' }),
+                time: timeStr,
+                bmi: bmi,
+                status: status,
+                weight: weight,
+                blood: bloodType
+            };
+
+            historyRecords.unshift(record);
+            if (historyRecords.length > 8) historyRecords.pop();
+
+            try {
+                localStorage.setItem('spooky_bmi_history', JSON.stringify(historyRecords));
+            } catch (err) {
+                console.log("LocalStorage restricted");
+            }
+
+            renderHistory();
+        }
+
+        function loadHistory() {
+            try {
+                const saved = localStorage.getItem('spooky_bmi_history');
+                if (saved) {
+                    historyRecords = JSON.parse(saved);
+                }
+            } catch (err) {
+                historyRecords = [];
+            }
+            renderHistory();
+        }
+
+        function renderHistory() {
+            const list = document.getElementById('historyList');
+            if (!historyRecords || historyRecords.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-6 text-bloody-lightPink/50 text-xs">
+                        <i class="fa-solid fa-ghost text-lg mb-1 block animate-ghost"></i>
+                        筆記本空空如也，點擊「召喚」留下第一條記錄吧！
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = historyRecords.map(item => `
+                <div class="flex items-center justify-between p-2.5 px-3 rounded-2xl bg-bloody-bg/70 border border-bloody-border hover:border-bloody-pink/50 transition-all text-xs">
+                    <div class="flex items-center gap-2">
+                        <span class="text-bloody-ghost font-mono text-[10px]">${item.date} ${item.time}</span>
+                        <span class="font-bold text-bloody-bone">BMI: ${item.bmi}</span>
+                        <span class="text-[10px] text-bloody-pink/70">(${item.blood}型血)</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-bloody-bone/80">${item.weight} kg</span>
+                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-bloody-pink/20 text-bloody-pink">
+                            ${item.status.split(' ')[0]}
+                        </span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function clearHistory() {
+            historyRecords = [];
+            try {
+                localStorage.removeItem('spooky_bmi_history');
+            } catch (e) {}
+            renderHistory();
+        }
+
+        // Spooky Darkly Cute Confetti / Particle Effects
+        function triggerSpookyCelebration() {
+            if (typeof confetti === 'function') {
+                confetti({
+                    particleCount: 40,
+                    spread: 70,
+                    origin: { y: 0.65 },
+                    colors: ['#FF85A2', '#E63946', '#C77DFF', '#F7EBE8'],
+                    disableForReducedMotion: true
+                });
+            }
+        }
+    </script>
+</body>
+</html>
